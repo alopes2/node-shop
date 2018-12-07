@@ -15,14 +15,18 @@ exports.postAddProduct = async (req, res, next) => {
   res.redirect('/');
 };
 
+exports.getEditProduct = (req, res, next) => {
+  res.render('admin/edit-product', {
+    pageTitle: 'Admin Edit Product',
+    path: '/admin/edit-product'
+  });
+};
+
 exports.getProducts = async (req, res, next) => {
-  // res.sendFile(path.join(__dirname, '..' ,'views', 'shop.html'));
-  // res.sendFile(path.join(rootDir ,'views', 'shop.html'));
   const products = await Product.fetchAll();
-  res.render('shop/product-list', {
+  res.render('admin/products', {
     prods: products,
-    pageTitle: 'Shop',
-    path: '/',
-    hasProducts: products.length > 0
+    pageTitle: 'Admin Products',
+    path: '/admin/products'
   });
 };
