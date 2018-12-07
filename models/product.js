@@ -3,12 +3,16 @@ const path = require('path');
 const rootDir = require('../util/path');
 const p = path.join(rootDir, 'data', 'products.json');
 const getProductsFromFile = callback => {
-    fs.readFile(p, (err, fileContent) => {
-        if (err) {
-            callback([]);
-        } else {
-            callback(JSON.parse(fileContent));
-        }
+    return new Promise((resolve, reject) => {
+        let data;
+        fs.readFile(p, (err, fileContent) => {
+            if (err) {
+                data = [];
+            } else {
+                data = JSON.parse(fileContent);
+            }
+            resolve(data);
+        });
     });
 }
 
@@ -17,16 +21,20 @@ module.exports = class Product {
     this.title = title;
   }
 
-  save() {
-    getProductsFromFile(products => {
-        products.push(this);
+  async save(callback) {
+    const products = await getProductsFromFile();
+    
+    products.push(this);
+
+    return new Promise((resolve, reject) => {
         fs.writeFile(p, JSON.stringify(products), (err) => {
             console.log(err);
+            resolve(products);
         });
-    });
+    })
   }
 
-  static fetchAll(callback) {
-      getProductsFromFile(products => callback(products));
+  static async fetchAll(callback) {
+    return await getProductsFromFile();
   }
 };
