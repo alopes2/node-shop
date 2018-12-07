@@ -18,12 +18,13 @@ exports.postAddProduct = (req, res, next) => {
 exports.getProducts = (req, res, next) => {
   // res.sendFile(path.join(__dirname, '..' ,'views', 'shop.html'));
   // res.sendFile(path.join(rootDir ,'views', 'shop.html'));
-  const products = Product.fetchAll();
-  console.log(products);
-  res.render('shop', {
-    prods: products,
-    pageTitle: 'Shop',
-    path: '/',
-    hasProducts: products.length > 0
+  Product.fetchAll(products => {
+    console.log(products);
+    res.render('shop', {
+      prods: products,
+      pageTitle: 'Shop',
+      path: '/',
+      hasProducts: products.length > 0
+    });
   });
 };
