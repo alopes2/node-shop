@@ -16,8 +16,8 @@ exports.getProduct = async (req, res, next) => {
   const product = await Product.findById(prodId);
   res.render('shop/product-detail', {
     product: product,
-    pageTitle: 'Product Details',
-    path: '/product-detail'
+    pageTitle: product.title,
+    path: '/products'
   });
 };
 
