@@ -40,7 +40,37 @@ module.exports = class Cart {
       });
     });
 
-    // Analyze car => find existing product
+    // Analyze cart => find existing product
     // Add new product / increase quatity
   }
+
+  static async deleteProduct(id, productPrice) {
+    const cart = await new Promise((resolve, reject) => {
+        fs.readFile(p, (err, fileContent) => {
+          if (err) {
+            reject(err);
+          }
+          resolve(JSON.parse(fileContent));
+        });
+      });
+
+    console.log(cart);
+    const updatedCart = { ...cart };
+    const product = updatedCart.products.find(p => p.id === id);
+    
+    const productQty = product.qty;
+    updatedCart.products = updatedCart.products.filter(p => p.id !== id);
+    updatedCart.totalPrice -= (productPrice * productQty);
+    
+    await new Promise((resolve, reject) => {
+      fs.writeFile(p, JSON.stringify(updatedCart), (err) => {
+          if (err) {
+              reject(err);
+          }
+          resolve(updatedCart);
+      });
+  });
+  }
 };
+
+

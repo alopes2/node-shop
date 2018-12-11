@@ -2,6 +2,9 @@ const fs = require('fs');
 const path = require('path');
 const rootDir = require('../util/path');
 const p = path.join(rootDir, 'data', 'products.json');
+
+const Cart = require('./cart');
+
 const getProductsFromFile = callback => {
     return new Promise((resolve, reject) => {
         let data;
@@ -57,15 +60,23 @@ module.exports = class Product {
 
   static async deleteById(id) {
     const products = await getProductsFromFile();
+    const product = products.find(p => p.id === id);
     const updatedProducts = products.filter(p => p.id !== id);
-    console.log(products);
 
-    return new Promise((resolve, reject) => {
-        fs.writeFile(p, JSON.stringify(updatedProducts), (err) => {
-            console.log(err);
-            resolve(updatedProducts);
+    try {
+        await new Promise((resolve, reject) => {
+            fs.writeFile(p, JSON.stringify(updatedProducts), (err) => {
+                if (err) {
+                    reject(err);
+                }
+                resolve(updatedProducts);
+            });
         });
-    });
+
+        await Cart.deleteProduct(id, product.price);
+    } catch (e) {
+        console.log(e);
+    }
   }
 
 };
