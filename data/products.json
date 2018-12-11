@@ -1,1 +1,9 @@
-[{"id":"12345","title":"Test!!!!!","imageUrl":"https://www.drawingnow.com/file/videos/steps/119657/how-to-draw-an-open-book-step-7.jpg","description":"This is an awesome book","price":"19"},{"id":"0.6523830011821417","title":"Super new Product","imageUrl":"http://shfcs.org/en/wp-content/uploads/2015/11/MedRes_Product-presentation-2.jpg","description":"Awesome Cube!!","price":"25.45"}]
+[
+  {
+    "id": "12345",
+    "title": "Test!!!!!",
+    "imageUrl": "https://www.drawingnow.com/file/videos/steps/119657/how-to-draw-an-open-book-step-7.jpg",
+    "description": "This is an awesome book",
+    "price": "19"
+  }
+]

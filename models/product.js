@@ -41,7 +41,7 @@ module.exports = class Product {
             console.log(err);
             resolve(updatedProducts);
         });
-    })
+    });
   }
 
   static async fetchAll() {
@@ -54,4 +54,18 @@ module.exports = class Product {
 
     return product
   }
+
+  static async deleteById(id) {
+    const products = await getProductsFromFile();
+    const updatedProducts = products.filter(p => p.id !== id);
+    console.log(products);
+
+    return new Promise((resolve, reject) => {
+        fs.writeFile(p, JSON.stringify(updatedProducts), (err) => {
+            console.log(err);
+            resolve(updatedProducts);
+        });
+    });
+  }
+
 };
