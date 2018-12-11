@@ -11,6 +11,16 @@ exports.getProducts = async (req, res, next) => {
   });
 };
 
+exports.getProduct = async (req, res, next) => {
+  const prodId = req.params.productId;
+  const product = await Product.findById(prodId);
+  res.render('shop/product-detail', {
+    product: product,
+    pageTitle: 'Product Details',
+    path: '/product-detail'
+  });
+};
+
 exports.getIndex = async (req, res, next) => {
   // res.sendFile(path.join(__dirname, '..' ,'views', 'shop.html'));
   // res.sendFile(path.join(rootDir ,'views', 'shop.html'));
