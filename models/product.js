@@ -17,7 +17,8 @@ const getProductsFromFile = callback => {
 }
 
 module.exports = class Product {
-  constructor(title, imageUrl, description, price) {
+  constructor(id, title, imageUrl, description, price) {
+    this.id = id;
     this.title = title;
     this.imageUrl = imageUrl;
     this.description = description;
@@ -25,15 +26,20 @@ module.exports = class Product {
   }
 
   async save() {
-    this.id = Math.random().toString();
     const products = await getProductsFromFile();
-    
-    products.push(this);
+    const updatedProducts = [...products];
+    if (this.id) {
+        const existingProductIndex = products.findIndex(p => p.id === this.id);
+        updatedProducts[existingProductIndex] = this;
+    } else {
+        this.id = Math.random().toString();
+        updatedProducts.push(this);
+    }
 
     return new Promise((resolve, reject) => {
-        fs.writeFile(p, JSON.stringify(products), (err) => {
+        fs.writeFile(p, JSON.stringify(updatedProducts), (err) => {
             console.log(err);
-            resolve(products);
+            resolve(updatedProducts);
         });
     })
   }
