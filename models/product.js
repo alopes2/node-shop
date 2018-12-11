@@ -47,8 +47,8 @@ module.exports = class Product {
     });
   }
 
-  static async fetchAll() {
-    return await getProductsFromFile();
+  static fetchAll() {
+    return getProductsFromFile();
   }
 
   static async findById(id) {
