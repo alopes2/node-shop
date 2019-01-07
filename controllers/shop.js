@@ -40,15 +40,19 @@ exports.getIndex = async (req, res, next) => {
 };
 
 exports.getCart = async (req, res, next) => {
-  const cart = await Cart.getCart();
-  const products = await Product.fetchAll();
-  const cartProducts = [];
-  for(let product of products) {
-    const cartProductData = cart.products.find(cp => cp.id === product.id);
-    if (cartProductData) {
-      cartProducts.push({productData: product, qty: cartProductData.qty});
-    }
-  }
+  // const cart = await Cart.getCart();
+  // const products = await Product.fetchAll();
+  // const cartProducts = [];
+  // for(let product of products) {
+  //   const cartProductData = cart.products.find(cp => cp.id === product.id);
+  //   if (cartProductData) {
+  //     cartProducts.push({productData: product, qty: cartProductData.qty});
+  //   }
+  // }
+
+  const cart = await req.user.getCart();
+
+  const cartProducts = await cart.getProducts();
 
   res.render('shop/cart', {
     path: '/cart',
