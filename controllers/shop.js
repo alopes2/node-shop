@@ -120,22 +120,18 @@ exports.postOrder = async (req, res, next) => {
 				return product;
 			})
 		);
+		await cart.setProducts(null);
 		res.redirect('/orders');
 	} catch (e) {
 		console.log(e);
 	}
 };
 
-exports.getOrders = (req, res, next) => {
+exports.getOrders = async (req, res, next) => {
+	const orders = await req.user.getOrders({ include: ['products'] });
 	res.render('shop/orders', {
 		path: '/orders',
-		pageTitle: 'Your Orders'
-	});
-};
-
-exports.getCheckout = (req, res, next) => {
-	res.render('shop/checkout', {
-		path: '/checkout',
-		pageTitle: 'Checkout'
+		pageTitle: 'Your Orders',
+		orders: orders
 	});
 };
