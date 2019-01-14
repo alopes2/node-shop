@@ -1,5 +1,4 @@
 const Product = require('../models/product');
-const Cart = require('../models/cart');
 
 exports.getProducts = async (req, res, next) => {
 	try {
@@ -98,13 +97,33 @@ exports.postCart = async (req, res, next) => {
 
 exports.postCartDeleteProduct = async (req, res, next) => {
 	const prodId = req.body.productId;
-  const cart = await req.user.getCart();
-  const products = await cart.getProducts({ where: { id: prodId } });
-  const product = products[0];
-  
-  const result = await product.cartItem.destroy();
+	const cart = await req.user.getCart();
+	const products = await cart.getProducts({ where: { id: prodId } });
+	const product = products[0];
+
+	const result = await product.cartItem.destroy();
 
 	res.redirect('/cart');
+};
+
+exports.postOrder = async (req, res, next) => {
+	const cart = await req.user.getCart();
+	const products = await cart.getProducts();
+
+	try {
+		const order = await req.user.createOrder();
+		await order.addProducts(
+			products.map(product => {
+				product.orderItem = {
+					quantity: product.cartItem.quantity
+				};
+				return product;
+			})
+		);
+		res.redirect('/orders');
+	} catch (e) {
+		console.log(e);
+	}
 };
 
 exports.getOrders = (req, res, next) => {
