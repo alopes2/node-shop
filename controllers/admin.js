@@ -16,7 +16,13 @@ exports.postAddProduct = async (req, res, next) => {
 	const price = req.body.price;
 	const description = req.body.description;
 
-	const product = new Product(title, price, description, imageUrl, null, req.user._id);
+	const product = new Product({
+		title: title,
+		price: price,
+		imageUrl: imageUrl,
+		description: description,
+		userId: req.user // For convenience, mongoose fetches the userId from the req.user object
+	});
 
 	try {
 		const newProduct = await product.save();
@@ -56,21 +62,25 @@ exports.postEditProduct = async (req, res, next) => {
 	const updatedImageUrl = req.body.imageUrl;
 	const updatedDesc = req.body.description;
 
-	const product = new Product(
-		updatedTitle,
-		updatedPrice,
-		updatedDesc,
-		updatedImageUrl,
-		productId);
-
-	product.save();
-
-	res.redirect('/admin/products');
+	try {
+		const product = await Product.findById(productId);
+	
+		product.title = updatedTitle;
+		product.price = updatedPrice;
+		product.imageUrl = updatedImageUrl;
+		product.description = updatedDesc;
+	
+		await product.save();
+	
+		res.redirect('/admin/products');
+	} catch (e) {
+		console.log(e);
+	}
 };
 
 exports.getProducts = async (req, res, next) => {
 	try {
-		const products = await Product.fetchAll();
+		const products = await Product.find().populate('userId');
 		res.render('admin/products', {
 			prods: products,
 			pageTitle: 'Admin Products',
@@ -85,7 +95,8 @@ exports.postDeleteProduct = async (req, res, next) => {
 	const productId = req.body.productId;
 	
 	try {
-		Product.deleteById(productId);
+		const result = await Product.findByIdAndDelete(productId);
+
 		res.redirect('/admin/products');	
 	} catch(e) {
 		console.log(e);
