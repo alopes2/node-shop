@@ -6,7 +6,8 @@ exports.getAddProduct = (req, res, next) => {
 	res.render('admin/edit-product', {
 		pageTitle: 'Add Product',
 		path: '/admin/add-product',
-		editing: false
+		editing: false,
+		isAuthenticated: req.session.isLoggedIn
 	});
 };
 
@@ -21,7 +22,7 @@ exports.postAddProduct = async (req, res, next) => {
 		price: price,
 		imageUrl: imageUrl,
 		description: description,
-		userId: req.user // For convenience, mongoose fetches the userId from the req.user object
+		userId: req.user // For convenience, mongoose fetches the userId from the req.session.user object
 	});
 
 	try {
@@ -51,7 +52,8 @@ exports.getEditProduct = async (req, res, next) => {
 		product: product,
 		pageTitle: 'Edit Product',
 		path: '/admin/products',
-		editing: editMode
+		editing: editMode,
+		isAuthenticated: req.session.isLoggedIn
 	});
 };
 
@@ -84,7 +86,8 @@ exports.getProducts = async (req, res, next) => {
 		res.render('admin/products', {
 			prods: products,
 			pageTitle: 'Admin Products',
-			path: '/admin/products'
+			path: '/admin/products',
+			isAuthenticated: req.session.isLoggedIn
 		});
 	} catch (e) {
 		console.log(e);

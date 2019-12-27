@@ -1,60 +1,60 @@
-const express = require('express');
 const keys = require('./config/keys');
-
-const bodyParser = require('body-parser');
-const mongoose = require('mongoose');
-
 const path = require('path');
 
+const express = require('express');
+const bodyParser = require('body-parser');
+const mongoose = require('mongoose');
+const session = require('express-session');
+const MongodDBStore = require('connect-mongodb-session')(session);
 
 const User = require('./models/user');
 
 const adminRoutes = require('./routes/admin');
 const shopRoutes = require('./routes/shop');
+const authRoutes = require('./routes/auth');
 
 const errorController = require('./controllers/error.js');
 
 const app = express();
+const sessionStore = new MongodDBStore({
+	uri: keys.database,
+	collection: 'sessions'
+});
 
 app.set('view engine', 'ejs');
 app.set('views', 'views');
 
 app.use(bodyParser.urlencoded({ extended: false }));
-
 app.use(express.static(path.join(__dirname, 'public')));
+app.use(session({
+	secret: keys.sessionSecret, // this is a normal string, for dev purpose can be anything
+	resave: false,
+	saveUninitialized: false,
+	store: sessionStore
+}));
 
-app.use((req, res, next) => {
-	User.findById('5e05ce7e1aa7a854d0e4d827')
-		.then(user => {
+app.use(async (req, res, next) => {
+	if (req.session.user) {
+		try {
+			const user = await User.findById(req.session.user._id);
 			req.user = user;
-			next();
-		})
-		.catch(err => console.log(err));
+		} catch (e) {
+			console.log(e);
+		}
+	}
+
+	next();
 });
 
 app.use('/admin', adminRoutes);
 app.use(shopRoutes);
+app.use(authRoutes);
 
 app.use(errorController.get404);
 	
 mongoose
 	.connect(keys.database)
 	.then(result => {
-		User.findOne()
-			.then(user => {
-				if (!user) {
-					const user = new User({
-						name: 'Andre',
-						email: 'andre@test.com',
-						cart: {
-							items: []
-						}
-					});
-
-					user.save();
-				}
-			});
-
 		app.listen(3000, () => {
 			console.log('Listening on port 3000');
 		});
