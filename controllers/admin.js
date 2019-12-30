@@ -64,7 +64,11 @@ exports.postEditProduct = async (req, res, next) => {
 
 	try {
 		const product = await Product.findById(productId);
-	
+		
+		if (product.userId.toString() !== req.user._id.toString()) {
+			return res.redirect('/admin/products');
+		}
+
 		product.title = updatedTitle;
 		product.price = updatedPrice;
 		product.imageUrl = updatedImageUrl;
@@ -80,7 +84,7 @@ exports.postEditProduct = async (req, res, next) => {
 
 exports.getProducts = async (req, res, next) => {
 	try {
-		const products = await Product.find().populate('userId');
+		const products = await Product.find({ userId: req.user._id }).populate('userId');
 		res.render('admin/products', {
 			prods: products,
 			pageTitle: 'Admin Products',
@@ -95,7 +99,7 @@ exports.postDeleteProduct = async (req, res, next) => {
 	const productId = req.body.productId;
 	
 	try {
-		const result = await Product.findByIdAndDelete(productId);
+		const result = await Product.deleteOne( { _id: productId, userId: req.user._id });
 
 		res.redirect('/admin/products');	
 	} catch(e) {
