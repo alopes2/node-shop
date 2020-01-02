@@ -1,10 +1,25 @@
 const express = require('express');
-const { body } = require('express-validator');
+const { body, check } = require('express-validator');
+const upload = require('multer');
 
 const { isAuth, requireRole } = require('../middlewares/auth');
 const adminController = require('../controllers/admin');
 
 const router = express.Router();
+
+const fileStorage = upload.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, 'images');
+  },
+  filename: (req, file, cb) => {
+    cb(null, Date.now() + '-' + file.originalname);
+  }
+});
+
+const fileFilter = (req, file, cb) => {
+  const acceptedTypes = ['image/png', 'image/jpg', 'image/jpeg'];
+  cb(null, acceptedTypes.includes(file.mimetype));
+};
 
 // /admin/add-product => GET
 router.get(
@@ -35,14 +50,12 @@ router.post(
   '/edit-product',
   isAuth,
   requireRole('admin'),
+  upload({ storage: fileStorage, fileFilter: fileFilter }).single('image'),
   [
     body('title', 'Invalid title.')
       .trim()
       .isString()
       .isLength({ min: 3 }),
-    body('imageUrl', 'Invalid image Url.')
-      .trim()
-      .isURL(),
     body('price', 'Invalid price.').isFloat(),
     body('description', 'Invalid description.')
       .trim()
@@ -56,14 +69,12 @@ router.post(
   '/add-product',
   isAuth,
   requireRole('admin'),
+  upload({ storage: fileStorage, fileFilter: fileFilter }).single('image'),
   [
     body('title', 'Invalid title.')
       .trim()
       .isString()
       .isLength({ min: 3 }),
-    body('imageUrl', 'Invalid image Url.')
-      .trim()
-      .isURL(),
     body('price', 'Invalid price.').isFloat(),
     body('description', 'Invalid description.')
       .trim()

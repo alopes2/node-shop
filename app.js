@@ -28,6 +28,7 @@ app.set('views', 'views');
 
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(express.static(path.join(__dirname, 'public')));
+app.use('/images', express.static(path.join(__dirname, 'images')));
 app.use(
   session({
     secret: keys.sessionSecret, // this is a normal string, for dev purpose can be anything
@@ -42,7 +43,6 @@ app.use(flash());
 app.use((req, res, next) => {
   res.locals.isAuthenticated = req.session.isLoggedIn;
   res.locals.csrfToken = req.csrfToken();
-  res.locals.userRole = req.user ? req.user.role : undefined;
 
   next();
 });
@@ -53,9 +53,10 @@ app.use(async (req, res, next) => {
       const user = await User.findById(req.session.user._id);
       if (user) {
         req.user = user;
+        res.locals.userRole = req.user.role;
       }
     } catch (e) {
-      throw next(e);
+      next(e);
     }
   }
 
@@ -71,11 +72,14 @@ app.use('/500', errorController.get500);
 app.use(errorController.get404);
 
 app.use((error, req, res, next) => {
+  console.log(error);
   res
     .status(500)
     .render('500', {
       pageTitle: 'Internal Error!',
       path: '/500',
+      userRole: req.user ? req.user.role : null,
+      csrfToken: req.csrfToken(),
       isAuthenticated: req.session.isLoggedIn
     });
 });
