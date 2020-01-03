@@ -83,12 +83,7 @@ router.post(
   adminController.postAddProduct
 );
 
-// /admin/add-product => POST
-router.post(
-  '/delete-product',
-  isAuth,
-  requireRole('admin'),
-  adminController.postDeleteProduct
-);
+// /admin/product/123 => DELETE
+router.delete('/product/:productId', isAuth, requireRole('admin'), adminController.deleteProduct);
 
 module.exports = router;
