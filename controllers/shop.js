@@ -1,5 +1,7 @@
+const keys = require('../config/keys');
 const fs = require('fs');
 const path = require('path');
+const stripe = require('stripe')(keys.stripe); //secret key from stripe
 
 const PDFDocument = require('pdfkit');
 
@@ -109,6 +111,64 @@ exports.postCartDeleteProduct = async (req, res, next) => {
   const result = await req.user.removeFromCart(prodId);
 
   res.redirect('/cart');
+};
+
+exports.getCheckout = async (req, res, next) => {
+  const user = await req.user.populate('cart.items.productId').execPopulate();
+  const products = user.cart.items;
+
+  const totalSum = products.reduce((acc, p) => acc + (p.quantity * p.productId.price), 0);
+
+  const stripeSession = await stripe.checkout.sessions.create({
+    payment_method_types: ['card'],
+    line_items: products.map(p => {
+      return {
+        name: p.productId.title,
+        description: p.productId.description,
+        amount: p.productId.price * 100,
+        currency: 'usd',
+        quantity: p.quantity
+      }
+    }),
+    success_url: `${req.protocol}://${req.get('host')}/checkout/success`, // http://localhost:3000 ...
+    cancel_url: `${req.protocol}://${req.get('host')}/checkout/cancel`, // http://localhost:3000 ...
+  });
+
+  res.render('shop/checkout', {
+    path: '/checkout',
+    pageTitle: 'Checkout',
+    products: products,
+    totalSum: totalSum,
+    sessionId: stripeSession.id
+  });
+};
+
+exports.getCheckoutSuccess = async (req, res, next) => {
+  try {
+    const user = await req.user.populate('cart.items.productId').execPopulate();
+
+    const products = user.cart.items.map(i => {
+      return { quantity: i.quantity, product: { ...i.productId._doc } };
+    });
+
+    const order = new Order({
+      user: {
+        email: req.user.email,
+        userId: req.user._id
+      },
+      products: products
+    });
+
+    await order.save();
+
+    await req.user.clearCart();
+
+    res.redirect('/orders');
+  } catch (e) {
+    const error = new Error(e);
+    error.httpStatusCode = 500;
+    return next(error);
+  }
 };
 
 exports.postOrder = async (req, res, next) => {
