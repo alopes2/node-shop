@@ -19,7 +19,7 @@ const errorController = require('./controllers/error.js');
 
 const app = express();
 const sessionStore = new MongodDBStore({
-  uri: keys.database,
+  uri: keys.mongoUri,
   collection: 'sessions'
 });
 
@@ -85,7 +85,7 @@ app.use((error, req, res, next) => {
 });
 
 mongoose
-  .connect(keys.database)
+  .connect(keys.mongoUri)
   .then(result => {
     app.listen(3000, () => {
       console.log('Listening on port 3000');
