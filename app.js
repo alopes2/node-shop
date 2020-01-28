@@ -1,6 +1,7 @@
 const keys = require('./config/keys');
 const path = require('path');
 const fs = require('fs');
+const https = require('https');
 
 const express = require('express');
 const bodyParser = require('body-parser');
@@ -26,6 +27,17 @@ const sessionStore = new MongodDBStore({
   uri: keys.mongoUri,
   collection: 'sessions'
 });
+
+// -- This is only needed if you need to set this manually --
+// -- Usually your hosting provider already sets SSL connection for public traffic -- 
+// for generating the private key and the certificate use the following command with OpenSSL
+// openssl req -nodes -new -x509 -keyout config/ssl/server.key -out onfig/ssl/server.cert
+// const privateKey = fs.readFileSync(
+//   path.join(__dirname, 'config/ssl/server.key')
+// );
+// const certificate = fs.readFileSync(
+//   path.join(__dirname, 'config/ssl/server.cert')
+// );
 
 app.set('view engine', 'ejs');
 app.set('views', 'views');
@@ -103,6 +115,14 @@ mongoose
     app.listen(3000, () => {
       console.log('Listening on port 3000');
     });
+
+    // Usually your hosting provider already sets https for public traffic
+    // This is only needed if you need to set manually by some reason
+    // https
+    //   .createServer({ key: privateKey, cert: certificate }, app)
+    //   .listen(process.env.PORT || 3000, () => {
+    //     console.log('Listening on port 3000');
+    //   });
   })
   .catch(err => {
     throw next(e);
