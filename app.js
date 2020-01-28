@@ -1,5 +1,6 @@
 const keys = require('./config/keys');
 const path = require('path');
+const fs = require('fs');
 
 const express = require('express');
 const bodyParser = require('body-parser');
@@ -10,6 +11,7 @@ const csrf = require('csurf');
 const flash = require('connect-flash');
 const helmet = require('helmet');
 const compression = require('compression');
+const morgan = require('morgan');
 
 const User = require('./models/user');
 
@@ -28,8 +30,16 @@ const sessionStore = new MongodDBStore({
 app.set('view engine', 'ejs');
 app.set('views', 'views');
 
+const accessLogStream = fs.createWriteStream(
+  path.join(__dirname, 'logs/access.log'),
+  { flags: 'a' }
+);
+
 app.use(helmet());
 app.use(compression());
+
+// if you remove the second argument, logs will be written to the console
+app.use(morgan('combined', { stream: accessLogStream }));
 
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(express.static(path.join(__dirname, 'public')));
@@ -78,15 +88,13 @@ app.use(errorController.get404);
 
 app.use((error, req, res, next) => {
   console.log(error);
-  res
-    .status(500)
-    .render('500', {
-      pageTitle: 'Internal Error!',
-      path: '/500',
-      userRole: req.user ? req.user.role : null,
-      csrfToken: req.csrfToken(),
-      isAuthenticated: req.session.isLoggedIn
-    });
+  res.status(500).render('500', {
+    pageTitle: 'Internal Error!',
+    path: '/500',
+    userRole: req.user ? req.user.role : null,
+    csrfToken: req.csrfToken(),
+    isAuthenticated: req.session.isLoggedIn
+  });
 });
 
 mongoose
@@ -97,5 +105,5 @@ mongoose
     });
   })
   .catch(err => {
-		throw next(e);
+    throw next(e);
   });
