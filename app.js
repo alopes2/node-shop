@@ -9,6 +9,7 @@ const MongodDBStore = require('connect-mongodb-session')(session);
 const csrf = require('csurf');
 const flash = require('connect-flash');
 const helmet = require('helmet');
+const compression = require('compression');
 
 const User = require('./models/user');
 
@@ -28,6 +29,8 @@ app.set('view engine', 'ejs');
 app.set('views', 'views');
 
 app.use(helmet());
+app.use(compression());
+
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(express.static(path.join(__dirname, 'public')));
 app.use('/images', express.static(path.join(__dirname, 'images')));
